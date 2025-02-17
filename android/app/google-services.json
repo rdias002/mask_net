@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "143265223776",
+    "project_id": "masknet-f099d",
+    "storage_bucket": "masknet-f099d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:143265223776:android:228dee3f2a5bb6940b5f05",
+        "android_client_info": {
+          "package_name": "com.example.mask_net"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAz8MGhpy0UilZhH2rNjEskv4fcQE5zHns"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
