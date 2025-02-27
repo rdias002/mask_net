@@ -10,19 +10,74 @@ class PostList extends StatelessWidget {
   final Function(String)? onPostTap;
   final Function(String)? onPostLikeTap;
   final Function(String, int)? onPollOptionTap;
-  const PostList(
-      {super.key,
-      required this.itemList,
-      this.onPostTap,
-      this.onPostLikeTap,
-      this.onPollOptionTap});
+  final Function(String)? onFilterSelected;
+  final Function(String)? onSortSelected;
+  const PostList({
+    super.key,
+    required this.itemList,
+    this.onPostTap,
+    this.onPostLikeTap,
+    this.onPollOptionTap,
+    this.onFilterSelected,
+    this.onSortSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
+    int delta = onSortSelected == null && onFilterSelected == null ? 0 : 1;
     return ListView.builder(
-      itemCount: itemList.length,
+      itemCount: itemList.length + delta,
       itemBuilder: (context, index) {
-        final post = itemList[index];
+        if (index == 0) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (onFilterSelected != null)
+                PopupMenuButton<String>(
+                  itemBuilder: (context) {
+                    return [
+                      const PopupMenuItem(value: 'All', child: Text('All')),
+                      const PopupMenuItem(value: 'Text', child: Text('Text')),
+                      const PopupMenuItem(value: 'Image', child: Text('Image')),
+                      const PopupMenuItem(value: 'Poll', child: Text('Poll')),
+                    ];
+                  },
+                  onSelected: onFilterSelected,
+                  child: TextButton.icon(
+                    label: const Text('Filter'),
+                    icon: const Icon(Icons.filter_list),
+                    onPressed: null,
+                    style: TextButton.styleFrom(
+                      disabledForegroundColor: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ),
+              if (onSortSelected != null)
+                PopupMenuButton<String>(
+                  itemBuilder: (context) {
+                    return [
+                      const PopupMenuItem(
+                          value: 'Newest', child: Text('Newest')),
+                      const PopupMenuItem(
+                          value: 'Oldest', child: Text('Oldest')),
+                      const PopupMenuItem(
+                          value: 'Most Likes', child: Text('Most Likes')),
+                    ];
+                  },
+                  onSelected: onSortSelected,
+                  child: TextButton.icon(
+                    label: const Text('Sort'),
+                    icon: const Icon(Icons.sort),
+                    onPressed: null,
+                    style: TextButton.styleFrom(
+                      disabledForegroundColor: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        }
+        final post = itemList[index - delta];
         return InkWell(
           onTap: () {
             onPostTap?.call(post.postId);

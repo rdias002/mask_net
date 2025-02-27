@@ -11,13 +11,19 @@ part 'feed_state.dart';
 
 class HomeFeedCubit extends Cubit<HomeFeedState> {
   final PostRepo _postRepo;
+  String selectedFilter = 'All';
+  String selectedSort = 'Newest';
+
   HomeFeedCubit(this._postRepo) : super(const HomeFeedState());
 
   Future<void> getPosts() async {
     emit(state.copyWith(isLoading: true));
 
     try {
-      final posts = await _postRepo.getPosts();
+      final posts = await _postRepo.getPosts(
+        filter: selectedFilter,
+        sort: selectedSort,
+      );
       if (posts is ResultFailed) {
         emit(FeedError(posts.error!.message));
         return;
@@ -69,9 +75,19 @@ class HomeFeedCubit extends Cubit<HomeFeedState> {
             .toList(),
       ));
     } catch (e) {
-      emit(FeedError(
+      emit(const FeedError(
         'An error occurred. Please try again.',
       ));
     }
+  }
+
+  void filterPosts(String value) {
+    selectedFilter = value;
+    getPosts();
+  }
+
+  void sortPosts(String value) {
+    selectedSort = value;
+    getPosts();
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +11,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../../config/app_locater.dart';
 import '../../config/app_router.dart';
 import '../../data/model/post.dart';
+import '../../data/model/post_comment.dart';
 import '../../data/post_repo.dart';
 import '../cubits/view_post/view_post_cubit.dart';
 
@@ -103,6 +105,7 @@ class ViewPostView extends StatelessWidget {
                             child: TextField(
                               focusNode: focusNode,
                               controller: _controller,
+                              style: Theme.of(context).textTheme.bodyMedium,
                               decoration: const InputDecoration(
                                 fillColor: Colors.white,
                                 hintText: 'Add a comment',
@@ -122,29 +125,8 @@ class ViewPostView extends StatelessWidget {
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {
                               final comment = state.post!.comments[index];
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
-                                child: ListTile(
-                                  title: Text(comment.body),
-                                  subtitle: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        '- ${comment.author}',
-                                      ),
-                                      Text(
-                                        timeago.format(comment.date),
-                                      )
-                                    ],
-                                  ),
-                                  visualDensity: VisualDensity.compact,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    side: const BorderSide(color: Colors.grey),
-                                  ),
-                                ),
-                              );
+                              return _buildComment(context, comment,
+                                  state.post!.postId, focusNode);
                             },
                             childCount: state.post!.comments.length,
                           ),
@@ -153,6 +135,77 @@ class ViewPostView extends StatelessWidget {
                     ),
                   ));
       },
+    );
+  }
+
+  Widget _buildComment(
+    BuildContext context,
+    PostComment comment,
+    String postId,
+    FocusNode focusNode,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            child: Text(comment.author[0].toUpperCase()),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${comment.author} • ${timeago.format(comment.date)}',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall!
+                      .copyWith(color: Colors.grey),
+                ),
+                Text(comment.body),
+                Row(
+                  children: [
+                    TextButton.icon(
+                      onPressed: () {
+                        context
+                            .read<ViewPostCubit>()
+                            .likeComment(postId, comment.id);
+                      },
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.all(6),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        textStyle: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      label: Text('${comment.claps} Likes'),
+                      icon: const Icon(
+                        Icons.thumb_up_outlined,
+                        size: 16,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        _controller.text = '@${comment.author} ';
+                        focusNode.requestFocus();
+                      },
+                      icon: const Icon(Icons.comment_outlined),
+                      iconSize: 18,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

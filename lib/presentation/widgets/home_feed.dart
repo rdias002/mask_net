@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../config/app_locater.dart';
@@ -53,6 +54,12 @@ class _HomeFeedView extends StatelessWidget {
                 },
                 onPollOptionTap: (postId, idx) {
                   context.read<HomeFeedCubit>().selectPollOption(postId, idx);
+                },
+                onFilterSelected: (filter) {
+                  context.read<HomeFeedCubit>().filterPosts(filter);
+                },
+                onSortSelected: (sort) {
+                  context.read<HomeFeedCubit>().sortPosts(sort);
                 },
               ));
         } else {

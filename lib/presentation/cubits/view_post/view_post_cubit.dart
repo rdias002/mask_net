@@ -43,6 +43,27 @@ class ViewPostCubit extends Cubit<ViewPostState> {
     }
   }
 
+  Future<void> likeComment(String postId, String commentId) async {
+    try {
+      final result = await _postRepo.addPostCommentClap(postId, commentId);
+      if (result is ResultFailed) {
+        emit(ViewPostError(result.error.message, state));
+        return;
+      }
+      emit(state.copyWith(
+        post: state.post!.copyWith(
+            comments: state.post!.comments.map((e) {
+          if (e.id == commentId) {
+            return e.copyWith(claps: e.claps + 1);
+          }
+          return e;
+        }).toList()),
+      ));
+    } catch (e) {
+      emit(ViewPostError('An error occurred. Please try again.', state));
+    }
+  }
+
   Future<void> selectPollOption(String postId, int optionId) async {
     try {
       final result = await _postRepo.selectPollOption(postId, optionId);

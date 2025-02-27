@@ -123,6 +123,26 @@ class PostRepo {
     }
   }
 
+  Future<Result<void>> addPostCommentClap(
+      String postId, String commentId) async {
+    try {
+      final post = await firebaseDb
+          .collection('posts')
+          .doc(postId)
+          .collection('comments')
+          .doc(commentId)
+          .get();
+      await post.reference.update({'claps': (post.data()?['claps'] ?? 0) + 1});
+
+      return const ResultSuccess(null);
+    } catch (e, s) {
+      logger.e(e, stackTrace: s);
+      return ResultFailed(ExceptionWrapper(
+        message: 'Something went wrong. Please try again.',
+      ));
+    }
+  }
+
   Future<Result<List<int>>> selectPollOption(String postId, int index) async {
     try {
       final post = await firebaseDb.collection('posts').doc(postId).get();
@@ -168,6 +188,7 @@ class PostRepo {
           id: "",
           body: comment,
           author: firebaseAuth.currentUser!.displayName!,
+          claps: 0,
           date: DateTime.now());
       final post = await firebaseDb.collection('posts').doc(postId).get();
 
@@ -190,8 +211,12 @@ class PostRepo {
     }
   }
 
-  Future<Result<List<Post>>> getPosts(
-      {String userId = '', String companyId = ''}) async {
+  Future<Result<List<Post>>> getPosts({
+    String userId = '',
+    String companyId = '',
+    String filter = '',
+    String sort = '',
+  }) async {
     try {
       var query = firebaseDb
           .collection('posts')
@@ -212,6 +237,30 @@ class PostRepo {
         data['commentCount'] = comments[e.key].count;
         return Post.fromJson(data);
       }).toList();
+
+      switch (filter) {
+        case 'Text':
+          posts.removeWhere((element) => element is! TextPost);
+          break;
+        case 'Image':
+          posts.removeWhere((element) => element is! ImagePost);
+          break;
+        case 'Poll':
+          posts.removeWhere((element) => element is! PollPost);
+          break;
+      }
+
+      switch (sort) {
+        case 'Newest':
+          posts.sort((a, b) => b.dateOfCreation.compareTo(a.dateOfCreation));
+          break;
+        case 'Oldest':
+          posts.sort((a, b) => a.dateOfCreation.compareTo(b.dateOfCreation));
+          break;
+        case 'Most Likes':
+          posts.sort((a, b) => b.claps.compareTo(a.claps));
+          break;
+      }
 
       return ResultSuccess(posts);
     } catch (e, s) {
